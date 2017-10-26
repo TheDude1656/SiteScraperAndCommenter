@@ -1,12 +1,13 @@
 // Dependencies
 var express = require("express");
 var exphbs = require("express-handlebars");
-var mongojs = require("mongojs");
+
 var mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
+var db = require("./models");
 
 
 // Initialize Express
@@ -22,18 +23,22 @@ app.set('view engine', 'handlebars');
 
 // Database configuration
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+mongoose.Promise = Promise;
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines", {
+    useMongoClient: true
+});
 var databaseUrl = "scraper";
 var collections = ["scrapedData"];
 
-// Hook mongojs configuration to the db variable
-var db = mongojs(databaseUrl, collections);
-db.on("error", function (error) {
-    console.log("Database Error:", error);
-});
-
 // Main route (simple Hello World Message)
 app.get("/", function (req, res) {
-    res.render('home');
+    db.Title
+        .find({})
+        .then(function (dbTitle) {
+            res.render("home");
+            console.log(dbTitle);
+        })
+
 });
 
 // Retrieve data from the db
@@ -48,8 +53,10 @@ app.get("/all", function (req, res) {
         else {
             res.json(found);
         }
+
     });
 });
+
 
 // Scrape data from one site and place it into the mongodb db
 app.get("/scrape", function (req, res) {
@@ -57,22 +64,7 @@ app.get("/scrape", function (req, res) {
     request("https://techcrunch.com/", function (error, response, html) {
         // Load the html body from request into cheerio
         var $ = cheerio.load(html);
-        //For each element with a "excerpt" class
-        // $(".excerpt").each(function (i, ele) {
-        //     var description = $(ele).text();
-        //     if (description) {
-        //         db.scrapedData.insert({
-        //             description: description
-        //         }, function (err, inserted) {
-        //             if (err) {
-        //                 console.log(err);
-        //             } else {
-        //                 console.log(inserted);
-        //             }
-        //         })
-        //     }
-        // });
-        // For each element with a "title" class
+
         $(".block-content").each(function (i, element) {
             // Save the text and href of each link enclosed in the current element
             var title = $(element).children("h2").children("a").text();
