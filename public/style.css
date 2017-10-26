@@ -1,5 +1,5 @@
 body {
-  background-color: #6a5;
+  background-color: rgb(9, 24, 7);
 }
 
 table,
@@ -10,8 +10,8 @@ td {
 }
 
 table {
-  width: 500px;
-  background-color: antiquewhite;
+  width: 75%;
+  background-color: rgb(103, 236, 62);
 }
 
 td {

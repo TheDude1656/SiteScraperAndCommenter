@@ -1,7 +1,14 @@
 function displayResults(data) {
   $.each(data, function (i, res) {
-    console.log(res);
-    $("tbody").append("<tr><td>" + res.title + "</td>" + "<td>" + res._id + "</td>" + "<td>" + res.link + "</td>");
+
+    var newsData = [{
+      title: res.title,
+      description: res.description,
+      link: res.link
+    }];
+
+    console.log(newsData);
+    // $("tbody").append("<tr><td>" + res.title + "</td>" + "<td>" + res.description + "</td>" + "<td>" + res.link + "</td>");
   })
 }
 

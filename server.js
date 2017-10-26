@@ -1,15 +1,24 @@
 // Dependencies
 var express = require("express");
+var exphbs = require("express-handlebars");
 var mongojs = require("mongojs");
+var mongoose = require("mongoose");
+var bodyParser = require("body-parser");
 // Require request and cheerio. This makes the scraping possible
 var request = require("request");
 var cheerio = require("cheerio");
 
+
 // Initialize Express
 var app = express();
 
-//Set up a static folder (public) for our web app
+//Set up express static to serve the static content
 app.use(express.static("public"));
+//Set up express handlebars
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main'
+}));
+app.set('view engine', 'handlebars');
 
 // Database configuration
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
@@ -24,7 +33,7 @@ db.on("error", function (error) {
 
 // Main route (simple Hello World Message)
 app.get("/", function (req, res) {
-    res.send("Hello world");
+    res.render('home');
 });
 
 // Retrieve data from the db
@@ -48,20 +57,35 @@ app.get("/scrape", function (req, res) {
     request("https://techcrunch.com/", function (error, response, html) {
         // Load the html body from request into cheerio
         var $ = cheerio.load(html);
+        //For each element with a "excerpt" class
+        // $(".excerpt").each(function (i, ele) {
+        //     var description = $(ele).text();
+        //     if (description) {
+        //         db.scrapedData.insert({
+        //             description: description
+        //         }, function (err, inserted) {
+        //             if (err) {
+        //                 console.log(err);
+        //             } else {
+        //                 console.log(inserted);
+        //             }
+        //         })
+        //     }
+        // });
         // For each element with a "title" class
-        $(".post-title").each(function (i, element) {
+        $(".block-content").each(function (i, element) {
             // Save the text and href of each link enclosed in the current element
-            var title = $(element).children("a").text();
-            var link = $(element).children("a").attr("href");
-
+            var title = $(element).children("h2").children("a").text();
+            var link = $(element).children("h2").children("a").attr("href");
+            var description = $(element).children("p").text();
 
             // If this found element had both a title and a link and a summary
-            if (title && link) {
+            if (title && link && description) {
                 // Insert the data in the scrapedData db
                 db.scrapedData.insert({
                         title: title,
-                        link: link
-
+                        link: link,
+                        description: description
                     },
                     function (err, inserted) {
                         if (err) {
