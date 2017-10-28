@@ -1,5 +1,5 @@
 {
-  "name": "sitescraperandcommentor",
+  "name": "sitescraperandcommenter",
   "version": "1.0.0",
   "description": "This page will let you scrape a webpage for certain items and let the user comment on the articles scraped.",
   "main": "server.js",
